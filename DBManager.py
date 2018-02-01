@@ -44,10 +44,10 @@ class DBManager:
                         category varchar(50) NOT NULL,
                         division varchar(50) NOT NULL, 
                         title varchar(200) NOT NULL,
-                        content varchar(20000),
+                        content varchar(16000),
                         view int(10),
                         date Date
-                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8
+                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
                 '''
             cursor.execute(sql)
         return
