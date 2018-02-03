@@ -1,10 +1,10 @@
 import json
 from wiz_crawler import WizCrawler
 
+
 def read_wiz():
     data = json.load(open('wiz_departments.json'))
 
-    print('url개수 : ',len(data))
     crawler = WizCrawler()
     for count in range(0,len(data)):
         department = data[count]['department']
@@ -16,7 +16,8 @@ def read_wiz():
         wiz = '.sookmyung.ac.kr/wiz/contents/board/board.php?home_id='
         url = 'http://' + domain_name + wiz + home_id + '&handle=' + handle
         crawler.crawl_site(url)
-    crawler.quit()
+        crawler.storeToDB()
+
     exit()
     return
 
