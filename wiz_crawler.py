@@ -12,7 +12,7 @@ class WizCrawler:
     type = None
 
     def __init__(self):
-        WizCrawler.browser = webdriver.PhantomJS()
+        WizCrawler.browser = webdriver.Chrome()
         WizCrawler.browser.implicitly_wait(3)
         return
 
