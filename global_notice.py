@@ -1,5 +1,4 @@
 from selenium import webdriver
-import DBManager
 from UnivDBManager import UnivDBManager
 
 browser = webdriver.PhantomJS()

@@ -1,6 +1,8 @@
 from selenium import webdriver
 import time
+from UnivDBManager import UnivDBManager
 
+UnivDBManager()
 main_url = 'https://snowe.sookmyung.ac.kr/bbs5/boards/jobcareer'
 
 browser = webdriver.Chrome()
@@ -36,16 +38,22 @@ for i in range(0, last_page_num):
     element_list = browser.find_elements_by_css_selector('#messageListBody > tr')
     browser.implicitly_wait(3)
     time.sleep(2)
-    url_list = [element_list[i].find_element_by_css_selector('td.title > a').get_attribute("href") for i in range(len(element_list)-1, notice_len-1, -1)]
+    url_list = [element_list[j].find_element_by_css_selector('td.title > a').get_attribute("href") for j in range(len(element_list)-1, notice_len-1, -1)]
+    num_list = browser.find_elements_by_css_selector('#messageListBody > tr > td.num')
+    nums = [num_list[j].text for j in range(len(num_list)-1, -1, -1)]
+    titles = [element_list[j].find_element_by_css_selector('td.title').text for j in range(len(element_list)-1, notice_len-1, -1)]
+    k = 0   # index of article numbers and titles
+
     for url in url_list:
         browser.implicitly_wait(3)
         browser.get(url)
-        title = browser.find_element_by_xpath('//*[@id="content"]/div[2]/div[1]/div[1]/strong/span[1]').text
+        title = titles[k]
         content = browser.find_element_by_css_selector('#_ckeditorContents').text
-        print(title)
-#        print(content)
-    browser.find_element_by_css_selector('#listUrlButton').click()  # back to list
+        article_num = int(nums[k])
+        k = k+1
+        UnivDBManager.insert(article_num, 'jobcareer', '', title, content)
 
+    browser.find_element_by_css_selector('#listUrlButton').click()  # back to list
     if current_in_bundle == 3:
         browser.find_element_by_xpath('//*[@id="pagingBar"]/a[2]').click()  # click pre button
         page_bundle = browser.find_elements_by_xpath('//*[@id="pagingBar"]/a')
