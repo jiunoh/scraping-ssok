@@ -8,8 +8,8 @@ browser.implicitly_wait(3)
 browser.get(main_url)
 time.sleep(3)
 
-browser.find_element_by_id('userId').send_keys('lebannen')
-browser.find_element_by_id('userPassword').send_keys('@snoEl01')
+browser.find_element_by_id('userId').send_keys('')
+browser.find_element_by_id('userPassword').send_keys('')
 browser.find_element_by_id('loginButton').click()
 browser.implicitly_wait(3)
 browser.get(main_url)
@@ -33,7 +33,7 @@ page_bundle = browser.find_elements_by_xpath('//*[@id="pagingBar"]/a')
 current_in_bundle = len(page_bundle) - 1
 
 page_num = last_page_num
-for i in range(0, 2):
+for i in range(0, 6):
     time.sleep(5)
     element_list = browser.find_elements_by_css_selector('#messageListBody > tr')
     browser.implicitly_wait(3)
@@ -47,13 +47,13 @@ for i in range(0, 2):
         print(title)
 #        print(content)
 #    page_num = page_num - 1
-    if current_in_bundle == 2:
-        browser.find_element_by_css_selector('#listUrlButton').click()
-        browser.find_element_by_xpath('//*[@id="pagingBar"]/a[2]').click()
+    browser.find_element_by_css_selector('#listUrlButton').click()  # back to list
+
+    if current_in_bundle == 3:
+        browser.find_element_by_xpath('//*[@id="pagingBar"]/a[2]').click()  # click pre button
         page_bundle = browser.find_elements_by_xpath('//*[@id="pagingBar"]/a')
         current_in_bundle = len(page_bundle) - 1
     else:
-        browser.find_element_by_css_selector('#listUrlButton').click()
         current_in_bundle -= 1
         browser.find_element_by_xpath('//*[@id="pagingBar"]/a['+str(current_in_bundle)+']').click()
         #page_bundle[current_in_bundle].click() #stale exception
