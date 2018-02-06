@@ -1,15 +1,13 @@
+from UnivDBManager import UnivDBManager
 from DBManager import DBManager
-from SnoweCrawler import SnoweCrawler
+from DepartmentDBManager import DepartmentDBManager
+from json_reader import read_wiz
 
 class Main:
     def __init__(self):
-        manager = DBManager()
-        return
-
-    def crawl_snowe_notice(self):
-        crawler = SnoweCrawler()
-        crawler.crawl_pages()
+        UnivDBManager()
+        DepartmentDBManager()
         return
 
 start = Main()
-start.crawl_snowe_notice()
+read_wiz()

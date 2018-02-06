@@ -1,7 +1,7 @@
 from selenium import webdriver
 from snowe_content_crawler import *
 import time
-from DBManager import DBManager
+from UnivDBManager import UnivDBManager
 
 
 class SnoweCrawler:
@@ -13,11 +13,25 @@ class SnoweCrawler:
         SnoweCrawler.browser.implicitly_wait(3)
         SnoweCrawler.browser.get(SnoweCrawler.url)
         time.sleep(5)
-        SnoweCrawler.set_page_crawling()
         return
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         SnoweCrawler.browser.quit()
+        return
+
+    @classmethod
+    def check_out_process(cls):
+        SnoweCrawler.set_page_crawling()
+        SnoweCrawler.crawl_pages()
+        return
+
+    @classmethod
+    def check_out_finished(cls):
+        SnoweCrawler.browser.find_element_by_xpath('//*[@id="fnshVDT"]/a').click()
+        SnoweCrawler.browser.implicitly_wait(3)
+        time.sleep(3)
+        SnoweCrawler.set_page_crawling()
+        SnoweCrawler.crawl_pages()
         return
 
     @classmethod
@@ -31,14 +45,11 @@ class SnoweCrawler:
 
     @classmethod
     def crawl_pages(cls):
-        global count
-        count = 1
-        while count <= page_max:
+        for count in range(1, page_max):
             print('page: ',str(count))
             SnoweCrawler.browser.get(SnoweCrawler.url+'#'+str(count))
             time.sleep(5)
             SnoweCrawler.call_list()
-            count+=1
         return
 
     @classmethod
@@ -57,6 +68,10 @@ class SnoweCrawler:
                 span = a.find_element_by_css_selector('span')
                 print("title", span.text)
                 content = print_page(href)
-                #DBManager.insert(int(num), title_head.text,title_head.text,span.text,content)
+                content = ' '.join(content.split())
+                UnivDBManager.insert(int(num), title_head.text, title_head.text, span.text, content)
         return
 
+start = SnoweCrawler()
+start.check_out_process()
+start.check_out_finished()
