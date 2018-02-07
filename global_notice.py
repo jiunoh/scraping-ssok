@@ -26,9 +26,18 @@ for i in range(0, last_page_num):
         title = browser.find_element_by_class_name('tit').text
         content = browser.find_element_by_id('contentsDiv').text
         num = num+1
-        DBManager.insert(num, 'global', 'global', title, content)
-#        print(title)
-#        print(content)
+        date = browser.find_element_by_css_selector('#board-container > div.view > table > tbody > tr > td.date').text
+        view = browser.find_element_by_css_selector('#board-container > div.view > table > tbody > tr > td.no').text
+        view = int(view)
+
+        record.title = title
+        record.content = content
+        record.id = num
+        record.date = date
+        record.view = view
+        record.category = '국제'
+        record.division = '국제'
+        DBManager.insert(record)
 
     browser.get(next_list_page)
 
