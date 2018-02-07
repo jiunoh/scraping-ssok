@@ -1,8 +1,10 @@
 from selenium import webdriver
 import time
 from DBManager import DBManager
+from Record import Record
 
 DBManager()
+record = Record()
 main_url = 'https://snowe.sookmyung.ac.kr/bbs5/boards/jobcareer'
 
 browser = webdriver.Chrome()
@@ -59,7 +61,14 @@ for i in range(0, last_page_num):
         content = browser.find_element_by_css_selector('#_ckeditorContents').text
         article_num = int(nums[k])
         k = k+1
-        DBManager.insert(article_num, '취업', division, title, content, page_view, date)
+        record.content = content
+        record.title = title
+        record.id = article_num
+        record.category = '취업'
+        record.division = division
+        record.view = page_view
+        record.date = date
+        DBManager.insert(record)
 
     browser.find_element_by_css_selector('#listUrlButton').click()  # back to list
     if current_in_bundle == 3:
