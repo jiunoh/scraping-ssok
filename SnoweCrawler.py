@@ -1,7 +1,7 @@
 from selenium import webdriver
 from snowe_content_crawler import *
+from DBManager import DBManager
 import time
-from UnivDBManager import UnivDBManager
 
 
 class SnoweCrawler:
@@ -39,7 +39,6 @@ class SnoweCrawler:
         global page_max
         page_end = SnoweCrawler.browser.find_element_by_css_selector('a.next_end')
         page_max = page_end.get_attribute('href')[len(SnoweCrawler.url) + 1:]
-        print(page_max)
         page_max = int(page_max)
         return
 
@@ -58,20 +57,17 @@ class SnoweCrawler:
         tr_list = board.find_elements_by_css_selector('tr')
         for tr in tr_list:
             if tr.get_attribute('class')!='notice':
-                num = tr.find_element_by_css_selector('td.num').text
-                title_head = tr.find_element_by_css_selector('td.title_head')
-                print("class:", title_head.text)
-                title = tr.find_element_by_css_selector('td.title')
-                a = title.find_element_by_css_selector('a')
+                num = tr.find_element_by_css_selector('td.num')
+                category = tr.find_element_by_css_selector('td.title_head')
+                a = tr.find_element_by_css_selector('a')
                 href = a.get_attribute('href')
-                print("href:", href)
-                span = a.find_element_by_css_selector('span')
-                print("title", span.text)
-                content = print_page(href)
-                content = ' '.join(content.split())
-                UnivDBManager.insert(int(num), title_head.text, title_head.text, span.text, content)
+                title = tr.find_element_by_css_selector('span')
+
+                record = print_page(href)
+                record.id = int(num.text)
+                record.category = category.text
+                record.division = category.text
+                record.title = title.text
+                DBManager.insert(record)
         return
 
-start = SnoweCrawler()
-start.check_out_process()
-start.check_out_finished()
