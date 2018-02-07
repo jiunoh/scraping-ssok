@@ -1,16 +1,13 @@
 from selenium import webdriver
 import time
 
-main_url = 'https://snowe.sookmyung.ac.kr/bbs5/boards/jobcareer'
+main_url = 'https://snowe.sookmyung.ac.kr/bbs5/boards/notice'
 
 browser = webdriver.Chrome()
 browser.implicitly_wait(3)
 browser.get(main_url)
 time.sleep(3)
 
-browser.find_element_by_id('userId').send_keys('')
-browser.find_element_by_id('userPassword').send_keys('')
-browser.find_element_by_id('loginButton').click()
 browser.implicitly_wait(3)
 browser.get(main_url)
 

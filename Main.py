@@ -1,5 +1,7 @@
 from DBManager import DBManager
 from read_wiz import  read_wiz
+from SnoweCrawler import SnoweCrawler
 
 DBManager()
-read_wiz()
+crawler = SnoweCrawler()
+crawler.check_out_process()
