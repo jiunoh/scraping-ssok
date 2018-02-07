@@ -1,9 +1,14 @@
 from selenium import webdriver
+import DBManager
+from UnivDBManager import UnivDBManager
 
 browser = webdriver.PhantomJS()
 browser.get('http://cms.sookmyung.ac.kr/wiz5/contents/board/board_action.php?home_id=exchange&handle=7&page=4&scale=15&categoryId=1&categoryDepth=&parent=')
 
 list_page_num = len(browser.find_elements_by_tag_name('li'))
+
+num = 0
+UnivDBManager()
 
 for i in range(0, list_page_num):
     next_list_page = browser.find_element_by_css_selector('#board-container > div.list > div.leftBtn > div > a').get_attribute('href')
@@ -14,6 +19,10 @@ for i in range(0, list_page_num):
         browser.get(url)
         title = browser.find_element_by_class_name('tit').text
         content = browser.find_element_by_id('contentsDiv').text
-        print(title)
-        print(content)
+        num = num+1
+        UnivDBManager.insert(num, 'global', 'global', title, content)
+#        print(title)
+#        print(content)
     browser.get(next_list_page)
+
+browser.quit()
