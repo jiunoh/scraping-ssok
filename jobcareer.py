@@ -1,8 +1,8 @@
 from selenium import webdriver
 import time
-from UnivDBManager import UnivDBManager
+from DBManager import DBManager
 
-UnivDBManager()
+DBManager()
 main_url = 'https://snowe.sookmyung.ac.kr/bbs5/boards/jobcareer'
 
 browser = webdriver.Chrome()
@@ -47,11 +47,19 @@ for i in range(0, last_page_num):
     for url in url_list:
         browser.implicitly_wait(3)
         browser.get(url)
+        page_view = browser.find_element_by_css_selector('#content > div.boardWrap.noticeGeneric > div.board_detail > div.titleWrap > ul > li.pageview').text
+        page_view = page_view.replace('조회수 ', '')
+        page_view = int(page_view)
+        division = browser.find_element_by_css_selector('#content > div.boardWrap.noticeGeneric > div.board_detail > div.titleWrap > strong > span.title_head > span').text
+        division = division.replace('[', '')
+        division = division.replace(']', '')
+        date = browser.find_element_by_css_selector('#content > div.boardWrap.noticeGeneric > div.board_detail > div.titleWrap > ul > li:nth-child(4)').text
+        date = date[0:10]
         title = titles[k]
         content = browser.find_element_by_css_selector('#_ckeditorContents').text
         article_num = int(nums[k])
         k = k+1
-        UnivDBManager.insert(article_num, 'jobcareer', '', title, content)
+        DBManager.insert(article_num, '취업', division, title, content, page_view, date)
 
     browser.find_element_by_css_selector('#listUrlButton').click()  # back to list
     if current_in_bundle == 3:
