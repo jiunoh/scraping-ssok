@@ -20,11 +20,13 @@ class SnoweCrawler:
     def crawlAt(cls, url):
         SnoweCrawler.browser.get(url)
         SnoweCrawler.crawl_pages()
+        SnoweCrawler.browser.get(url)
+        SnoweCrawler.browser.implicitly_wait(3)
+        time.sleep(3)
         SnoweCrawler.browser.find_element_by_xpath('//*[@id="fnshVDT"]/a').click()
         SnoweCrawler.browser.implicitly_wait(3)
         time.sleep(3)
         SnoweCrawler.crawl_pages()
-
         return
 
     @classmethod
