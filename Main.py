@@ -4,5 +4,7 @@ from SnoweCrawler import SnoweCrawler
 
 DBManager()
 crawler = SnoweCrawler()
-url = 'https://snowe.sookmyung.ac.kr/bbs5/boards/notice'
-crawler.crawlAt(url)
+crawler.setInfo('YOUR_ID','YOUR_PW')
+urls = ['https://snowe.sookmyung.ac.kr/bbs5/boards/jobcareer','https://snowe.sookmyung.ac.kr/bbs5/boards/notice']
+for url in urls:
+    crawler.crawlAt(url)

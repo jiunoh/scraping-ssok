@@ -17,6 +17,16 @@ class SnoweCrawler:
         return
 
     @classmethod
+    def setInfo(cls,ID,PW):
+        SnoweCrawler.browser.get('https://snowe.sookmyung.ac.kr/bbs5/users/login')
+        time.sleep(3)
+        SnoweCrawler.browser.find_element_by_id('userId').send_keys(ID)
+        SnoweCrawler.browser.find_element_by_id('userPassword').send_keys(PW)
+        SnoweCrawler.browser.find_element_by_id('loginButton').click()
+        SnoweCrawler.browser.implicitly_wait(3)
+        return
+
+    @classmethod
     def crawlAt(cls, url):
         SnoweCrawler.browser.get(url)
         SnoweCrawler.crawl_pages()
