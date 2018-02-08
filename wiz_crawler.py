@@ -2,11 +2,13 @@ from selenium import webdriver
 from DBManager import DBManager
 from Record import Record
 from datetime import datetime
-import time
 import re
+from selenium.common.exceptions import NoSuchElementException
+import time
 
 
 class WizCrawler:
+    record_list = []
     browser = None
     department = None
     type = None
@@ -24,63 +26,52 @@ class WizCrawler:
 
     @classmethod
     def print_list(cls):
-        titles = WizCrawler.browser.find_elements_by_css_selector('td.list_td1')
-        NUMBER_COLUMN = 5
-        list_len = len(titles)//NUMBER_COLUMN
-        count =0
-        while count < list_len:
-            titles = WizCrawler.browser.find_elements_by_css_selector('td.list_td1')
-            number = titles.__getitem__(count*NUMBER_COLUMN)
-            if(number.text!='공지'):
+        row_col = WizCrawler.browser.find_elements_by_css_selector('td.list_td1')
+        NUMBER_COLUMN = len(WizCrawler.browser.find_elements_by_css_selector('td.title_bg1'))
+        list_len = len(row_col)//NUMBER_COLUMN
+        for count in range(0, list_len):
+            row_col = WizCrawler.browser.find_elements_by_css_selector('td.list_td1')
+            number = row_col.__getitem__(count*NUMBER_COLUMN)
+            if number.text != '공지':
                 record = Record()
-                title_tr = titles.__getitem__(count*NUMBER_COLUMN+2)
+                title_tr = row_col.__getitem__(count*NUMBER_COLUMN + 2)
                 title_a = title_tr.find_element_by_css_selector('a')
                 record.title = title_a.text
-                print(str(count + 1) + "." + "제목: ", record.title)
                 record.id = number.text
-                date = titles.__getitem__(count * NUMBER_COLUMN + 3).text
-                p = re.compile('\d{4}-\d{2}-\d{2}')
-                if not p.match(date):
-                    date = str(datetime.today().year) + '-' + date
+                date = row_col.__getitem__(NUMBER_COLUMN*(count + 1) - 2).text
+                if not re.match('\d{4}-\d{2}-\d{2}',date):
+                    now = datetime.now()
+                    date = str(now.year)+date
                 record.date = date
-                record.view = titles.__getitem__(count*NUMBER_COLUMN + 4).text
+                record.view = row_col.__getitem__(NUMBER_COLUMN*(count + 1) - 1).text
                 WizCrawler.print_link_content(title_a, record)
-            count+=1
         return
 
     @classmethod
     def move_to_next_page(cls):
         WizCrawler.print_list()
-        total_tr = WizCrawler.browser.find_elements_by_xpath('/html/body/form[2]/table/tbody/tr[*]')
-        page_location = str(len(total_tr) - 2)
-        page_table = WizCrawler.browser.find_element_by_xpath('/html/body/form[2]/table/tbody/tr[' + page_location + ']/td/table/tbody/tr/td[2]')
-        page_list = page_table.find_elements_by_css_selector('*')
-        current_page = page_table.find_element_by_css_selector('b')
-        CURRENT_NUMBER = current_page.text
-        last_page = page_list.__getitem__(len(page_list) - 1)
-        LAST_NUMBER = last_page.text
-        print('page:', CURRENT_NUMBER + '/' + LAST_NUMBER)
-        if(LAST_NUMBER !='[다음]' and CURRENT_NUMBER==LAST_NUMBER):
-            print("END OF PAGE")
-        else:
-            current_item_count = page_list.index(current_page)
-            next_page = page_list.__getitem__(current_item_count+1)
+        bott_line0 = WizCrawler.browser.find_element_by_css_selector('td.bott_line0')
+        try:
+            next_page = bott_line0.find_element_by_xpath('//b//following-sibling::a')
+            print(next_page.text)
             next_page.click()
             time.sleep(5)
             WizCrawler.move_to_next_page()
+        except NoSuchElementException:
+            print("END OF PAGE")
+
         return
+
 
     @classmethod
     def print_link_content(cls, a, record):
         a.click()
         time.sleep(5)
         content = WizCrawler.browser.find_element_by_id('contentsDiv').text
-        content = ' '.join(content.split())
-        print('content:\n',content)
         record.category = WizCrawler.department
         record.division = WizCrawler.type
-        record.content = content
-        DBManager.insert(record)
+        record.content = ' '.join(content.split())
+        WizCrawler.record_list.append(record)
         WizCrawler.browser.execute_script("window.history.go(-1)")
         time.sleep(5)
         return
@@ -92,8 +83,15 @@ class WizCrawler:
         WizCrawler.move_to_next_page()
         return
 
+
     @staticmethod
-    def quit():
+    def storeToDB():
+        for record in WizCrawler.record_list:
+            DBManager.insert(record)
+        WizCrawler.record_list.clear()
+        return
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
         WizCrawler.browser.quit()
         return
 

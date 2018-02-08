@@ -3,4 +3,6 @@ from read_wiz import  read_wiz
 from SnoweCrawler import SnoweCrawler
 
 DBManager()
-SnoweCrawler().crawl_pages()
+crawler = SnoweCrawler()
+url = 'https://snowe.sookmyung.ac.kr/bbs5/boards/notice'
+crawler.crawlAt(url)

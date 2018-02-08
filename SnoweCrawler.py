@@ -6,59 +6,95 @@ import time
 
 class SnoweCrawler:
     browser = None
-    url = 'https://snowe.sookmyung.ac.kr/bbs5/boards/notice'
+    url_list = None
+    titles = None
+    nums = None
 
     def __init__(self):
         SnoweCrawler.browser = webdriver.Chrome()
         SnoweCrawler.browser.implicitly_wait(3)
-        SnoweCrawler.browser.get(SnoweCrawler.url)
         time.sleep(5)
         return
 
     @classmethod
-    def crawl(cls):
+    def crawlAt(cls, url):
+        SnoweCrawler.browser.get(url)
         SnoweCrawler.crawl_pages()
-        time.sleep(2)
+        SnoweCrawler.browser.find_element_by_xpath('//*[@id="fnshVDT"]/a').click()
         SnoweCrawler.browser.implicitly_wait(3)
-     #   cls.browser.find_element_by_id('fnshVDT').click()
-     #    cls.browser.implicitly_wait(3)
-     #    time.sleep(2)
-     #    cls.crawl_pages()
+        time.sleep(3)
+        SnoweCrawler.crawl_pages()
+
         return
 
     @classmethod
     def crawl_pages(cls):
-        global page_max
-        page_max = int(cls.browser.find_element_by_css_selector('#pagingBar > strong').text)
-        for count in range(1, page_max):
-            print('page: ',str(count))
-            cls.browser.implicitly_wait(3)
-            cls.browser.get(SnoweCrawler.url+'#'+str(count))
+        SnoweCrawler.browser.find_element_by_css_selector('a.next_end').click()
+        SnoweCrawler.browser.implicitly_wait(3)
+        time.sleep(2)
+        last_page_num = int(
+            SnoweCrawler.browser.find_element_by_css_selector('#pagingBar > strong').text)  # set last page to current (194)
+
+        notice_list = SnoweCrawler.browser.find_elements_by_css_selector('#messageListBody > tr.notice')
+        notice_len = len(notice_list)
+        page_bundle = SnoweCrawler.browser.find_elements_by_xpath('//*[@id="pagingBar"]/a')
+        current_in_bundle = len(page_bundle) - 1
+
+        for i in range(0, last_page_num):
             time.sleep(5)
-            SnoweCrawler.call_list()
+            element_list = SnoweCrawler.browser.find_elements_by_css_selector('#messageListBody > tr')
+            SnoweCrawler.browser.implicitly_wait(3)
+            time.sleep(2)
+            SnoweCrawler.url_list = [element_list[j].find_element_by_css_selector('td.title > a').get_attribute("href") for j in
+                        range(len(element_list) - 1, notice_len - 1, -1)]
+            num_list = SnoweCrawler.browser.find_elements_by_css_selector('#messageListBody > tr > td.num')
+            SnoweCrawler.nums = [num_list[j].text for j in range(len(num_list) - 1, -1, -1)]
+            SnoweCrawler.titles = [element_list[j].find_element_by_css_selector('td.title').text for j in
+                      range(len(element_list) - 1, notice_len - 1, -1)]
+
+            SnoweCrawler.extract_data()
+
+            SnoweCrawler.browser.find_element_by_css_selector('#listUrlButton').click()  # back to list
+            if current_in_bundle == 3:
+                SnoweCrawler.browser.find_element_by_xpath('//*[@id="pagingBar"]/a[2]').click()  # click pre button
+                page_bundle = SnoweCrawler.browser.find_elements_by_xpath('//*[@id="pagingBar"]/a')
+                current_in_bundle = len(page_bundle) - 1
+            else:
+                current_in_bundle -= 1
+                SnoweCrawler.browser.find_element_by_xpath('//*[@id="pagingBar"]/a[' + str(current_in_bundle) + ']').click()
+
         return
 
     @classmethod
-    def call_list(cls):
-        element_list = cls.broswer.find_elements_by_css_selector('#messageListBody > tr')
-        for tr in element_list:
-            if tr.get_attribute('class') != 'notice':
-                num = tr.find_element_by_css_selector('td.num')
-                category = tr.find_element_by_css_selector('td.title_head')
-                a = tr.find_element_by_css_selector('a')
-                href = a.get_attribute('href')
-                title = tr.find_element_by_css_selector('span')
-
-                record = Record()
-                record.view = SnoweCrawler.browser.find_element_by_css_selector('li.pageview').text[4:]
-                record.date = SnoweCrawler.browser.find_element_by_css_selector('li.date').text[:10]
-                content = SnoweCrawler.browser.find_element_by_css_selector('#_ckeditorContents').text
-                record.content = ' '.join(content.split())
-                record.id = int(num.text)
-                record.category = "공지"
-                record.division = category.text
-                record.title = title.text
-                DBManager.insert(record)
+    def extract_data(cls):
+        k = 0  # index of article numbers and titles
+        for url in SnoweCrawler.url_list:
+            SnoweCrawler.browser.implicitly_wait(3)
+            SnoweCrawler.browser.get(url)
+            page_view = SnoweCrawler.browser.find_element_by_css_selector(
+                '#content > div.boardWrap.noticeGeneric > div.board_detail > div.titleWrap > ul > li.pageview').text
+            page_view = page_view.replace('조회수 ', '')
+            page_view = int(page_view)
+            division = SnoweCrawler.browser.find_element_by_css_selector(
+                '#content > div.boardWrap.noticeGeneric > div.board_detail > div.titleWrap > strong > span.title_head > span').text
+            division = division.replace('[', '')
+            division = division.replace(']', '')
+            date = SnoweCrawler.browser.find_element_by_css_selector(
+                '#content > div.boardWrap.noticeGeneric > div.board_detail > div.titleWrap > ul > li:nth-child(4)').text
+            date = date[0:10]
+            title = SnoweCrawler.titles[k]
+            content = SnoweCrawler.browser.find_element_by_css_selector('#_ckeditorContents').text
+            article_num = int(SnoweCrawler.nums[k])
+            k = k + 1
+            record = Record()
+            record.content =  ' '.join(content.split())
+            record.title = title
+            record.id = article_num
+            record.category = '취업'
+            record.division = division
+            record.view = page_view
+            record.date = date
+            DBManager.insert(record)
         return
 
     def __exit__(self, exc_type, exc_val, exc_tb):
