@@ -20,8 +20,8 @@ class SnoweCrawler:
     def setInfo(cls,ID,PW):
         SnoweCrawler.browser.get('https://snowe.sookmyung.ac.kr/bbs5/users/login')
         time.sleep(3)
-        SnoweCrawler.browser.find_element_by_id('userId').send_keys(ID)
-        SnoweCrawler.browser.find_element_by_id('userPassword').send_keys(PW)
+        SnoweCrawler.browser.find_element_by_id('userId').send_keys('')
+        SnoweCrawler.browser.find_element_by_id('userPassword').send_keys('')
         SnoweCrawler.browser.find_element_by_id('loginButton').click()
         SnoweCrawler.browser.implicitly_wait(3)
         return
@@ -29,10 +29,9 @@ class SnoweCrawler:
     @classmethod
     def crawlAt(cls, url):
         SnoweCrawler.browser.get(url)
-        SnoweCrawler.crawl_pages()
-        SnoweCrawler.browser.get(url)
         SnoweCrawler.browser.implicitly_wait(3)
         time.sleep(3)
+        SnoweCrawler.crawl_pages()
         SnoweCrawler.browser.find_element_by_xpath('//*[@id="fnshVDT"]/a').click()
         SnoweCrawler.browser.implicitly_wait(3)
         time.sleep(3)
