@@ -3,7 +3,7 @@ from wiz_crawler import WizCrawler
 
 
 def read_wiz():
-    data = json.load(open('wiz_departments.json'))
+    data = json.load(open('wiz_departments.json',"r",encoding="utf8"))
 
     crawler = WizCrawler()
     for count in range(0,len(data)):
