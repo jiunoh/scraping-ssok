@@ -1,3 +1,4 @@
+from pymysql import InternalError
 from selenium import webdriver
 from DBManager import DBManager
 from Record import Record
@@ -96,7 +97,12 @@ class WizCrawler:
     @staticmethod
     def storeToDB():
         for record in WizCrawler.record_list:
-            DBManager.insert(record)
+            try:
+                DBManager.insert(record)
+            except InternalError:
+                record.content ="InternalError"
+                DBManager.insert(record)
+                print(record.category+" "+record.division+" "+record.title)
         WizCrawler.record_list.clear()
         return
 
